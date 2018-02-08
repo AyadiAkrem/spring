@@ -7,6 +7,7 @@ package be.deepit.spring.orm.service;
 
 import be.deepit.spring.orm.model.Product;
 import java.util.Arrays;
+import javax.transaction.TransactionRequiredException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -26,13 +27,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/spring.xml")
-public class ProductServiceRequiredTest {
+public class ProductServiceMandaotry {
 
     @Autowired
-    @Qualifier(value = "productServiceRequired")
-    ProductService productServiceRequired;
+    @Qualifier(value = "productServiceMandatory")
+    ProductService productService;
 
-    public ProductServiceRequiredTest() {
+    public ProductServiceMandaotry() {
     }
 
     @BeforeClass
@@ -54,25 +55,23 @@ public class ProductServiceRequiredTest {
     /**
      * Test of getProductDao method, of class ProductServiceRequired.
      */
-    @Test
+    @Test (expected = org.springframework.transaction.IllegalTransactionStateException.class)
     public void testGetProductDao() {
         System.out.println("getProductDao");
-        assertTrue(productServiceRequired.toString().contains("ProductServiceRequired") );
-        productServiceRequired.add(new Product(1, "Product 1"));
-        productServiceRequired.add(new Product(2, "Product 2"));
-        System.out.println("listAll: " + productServiceRequired.listAll());
-        //Test transaction rollback (duplicated key)
+        assertTrue(productService.toString().contains("ProductServiceMandatory") );
+        //Test transaction)
         try {
-            productServiceRequired.addAll(Arrays.asList(new Product(3, "Book"), new Product(4, "Soap"), new Product(1, "Computer")));
+            productService.addAll(Arrays.asList(new Product(3, "Book"), new Product(4, "Soap"), new Product(1, "Computer")));
         } catch (DataAccessException dataAccessException) {
         }
-        assertEquals(productServiceRequired.listAll().size(), 2);
+        assertEquals(productService.listAll().size(), 3);
         // Test transaction rollback in the main tx at the end 
         try {
-            productServiceRequired.addAll(Arrays.asList(new Product(5, "Book"), new Product(6, "Soap"), new Product(7, "Error")));
+            productService.addAll(Arrays.asList(new Product(5, "Book"), new Product(6, "Soap"), new Product(7, "Error")));
         } catch (IllegalArgumentException illegalArgumentException) {
         }
-        assertEquals(productServiceRequired.listAll().size(), 2);
+        assertEquals(productService.listAll().size(), 3);
+        productService.add(new Product(1, "Product 1"));
     }
 
 }

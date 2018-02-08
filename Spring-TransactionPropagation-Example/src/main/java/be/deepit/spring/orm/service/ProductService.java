@@ -19,10 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public interface ProductService {
 
-    void add(Product product);
-
-    void addAll(Collection<Product> products);
-
     ProductDao getProductDao();
 
     @Transactional(readOnly = true)
@@ -31,4 +27,17 @@ public interface ProductService {
 
     }
 
+    public default void add(Product product) {
+        getProductDao().persist(product);
+    }
+
+    public default void addAll(Collection<Product> products) {
+        for (Product product : products) {
+            if (product.getName().contains("Error")) {
+                throw new IllegalArgumentException();
+            } else {
+                add(product);
+            }
+        }
+    }
 }

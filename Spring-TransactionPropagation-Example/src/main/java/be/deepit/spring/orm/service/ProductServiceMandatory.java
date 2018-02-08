@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-public class ProductServiceRequired implements ProductService {
+public class ProductServiceMandatory implements ProductService {
 
     @Autowired
     private ProductDao productDao;
@@ -20,7 +20,7 @@ public class ProductServiceRequired implements ProductService {
         return productDao;
     }
     
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.MANDATORY)
     public void add(Product product) {
         ProductService.super.add(product);
     }
