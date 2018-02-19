@@ -10,13 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * This is an example of the {@link Propagation#MANDATORY} propagation type.
- * The MANDATORY behavior states that an existing opened transaction must already exist.
- * If not an exception will be thrown by the container.
- */
 @Component
-public class ProductServiceMandatory implements ProductService {
+public class ProductServiceRequiresNew implements ProductService {
 
     @Autowired
     private ProductDao productDao;
@@ -25,7 +20,7 @@ public class ProductServiceMandatory implements ProductService {
         return productDao;
     }
     
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void add(Product product) {
         ProductService.super.add(product);
     }

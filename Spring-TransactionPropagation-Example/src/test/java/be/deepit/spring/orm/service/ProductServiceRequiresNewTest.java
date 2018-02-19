@@ -7,7 +7,6 @@ package be.deepit.spring.orm.service;
 
 import be.deepit.spring.orm.model.Product;
 import java.util.Arrays;
-import javax.transaction.TransactionRequiredException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -27,13 +26,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/spring.xml")
-public class ProductServiceMandaotry {
+public class ProductServiceRequiresNewTest {
 
     @Autowired
-    @Qualifier(value = "productServiceMandatory")
+    @Qualifier(value = "productServiceRequiresNew")
     ProductService productService;
 
-    public ProductServiceMandaotry() {
+    public ProductServiceRequiresNewTest() {
     }
 
     @BeforeClass
@@ -55,23 +54,25 @@ public class ProductServiceMandaotry {
     /**
      * Test of getProductDao method, of class ProductServiceRequired.
      */
-    @Test (expected = org.springframework.transaction.IllegalTransactionStateException.class)
+    @Test
     public void testGetProductDao() {
         System.out.println("getProductDao");
-        assertTrue(productService.toString().contains("ProductServiceMandatory") );
-        //Test transaction)
+        assertTrue(productService.toString().contains("ProductServiceRequiresNew") );
+        productService.add(new Product(1, "Product 1"));
+        productService.add(new Product(2, "Product 2"));
+        System.out.println("listAll: " + productService.listAll());
+        //Test transaction rollback (duplicated key)
         try {
             productService.addAll(Arrays.asList(new Product(3, "Book"), new Product(4, "Soap"), new Product(1, "Computer")));
         } catch (DataAccessException dataAccessException) {
         }
-        assertEquals(productService.listAll().size(), 3);
+        assertEquals(productService.listAll().size(), 2);
         // Test transaction rollback in the main tx at the end 
         try {
             productService.addAll(Arrays.asList(new Product(5, "Book"), new Product(6, "Soap"), new Product(7, "Error")));
         } catch (IllegalArgumentException illegalArgumentException) {
         }
-        assertEquals(productService.listAll().size(), 3);
-        productService.add(new Product(1, "Product 1"));
+        assertEquals(productService.listAll().size(), 2);
     }
 
 }
