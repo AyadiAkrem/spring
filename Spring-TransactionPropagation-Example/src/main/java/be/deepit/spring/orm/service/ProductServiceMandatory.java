@@ -12,10 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * This is an example of the {@link Propagation#MANDATORY} propagation type.
- * The MANDATORY behavior states that an existing opened transaction must already exist.
+ * The MANDATORY behaviour states that an existing opened transaction must already exist.
  * If not an exception will be thrown by the container.
+ * 
+ * tx -> join tx
+ * no -> throw a TransactionRequiredException
+ * 
+ * @author Akrem AYADI
  */
-@Component
+@Component(value = "psm")
 public class ProductServiceMandatory implements ProductService {
 
     @Autowired

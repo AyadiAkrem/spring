@@ -6,6 +6,7 @@
 package be.deepit.spring.orm.service;
 
 import be.deepit.spring.orm.model.Product;
+import static be.deepit.spring.orm.model.Product.TransactionType.*;
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -49,6 +50,7 @@ public class ProductServiceRequiresNewTest {
 
     @After
     public void tearDown() {
+         productService.removeAll();
     }
 
     /**
@@ -58,18 +60,18 @@ public class ProductServiceRequiresNewTest {
     public void testGetProductDao() {
         System.out.println("getProductDao");
         assertTrue(productService.toString().contains("ProductServiceRequiresNew") );
-        productService.add(new Product(1, "Product 1"));
-        productService.add(new Product(2, "Product 2"));
+        productService.add(new Product(1, "Product 1",CURRENT_TX));
+        productService.add(new Product(2, "Product 2",CURRENT_TX));
         System.out.println("listAll: " + productService.listAll());
         //Test transaction rollback (duplicated key)
         try {
-            productService.addAll(Arrays.asList(new Product(3, "Book"), new Product(4, "Soap"), new Product(1, "Computer")));
+            productService.addAll(Arrays.asList(new Product(3, "Book",INNER_TX), new Product(4, "Soap",INNER_TX), new Product(1, "Computer",INNER_TX)));
         } catch (DataAccessException dataAccessException) {
         }
         assertEquals(productService.listAll().size(), 2);
         // Test transaction rollback in the main tx at the end 
         try {
-            productService.addAll(Arrays.asList(new Product(5, "Book"), new Product(6, "Soap"), new Product(7, "Error")));
+            productService.addAll(Arrays.asList(new Product(5, "Book",INNER_TX), new Product(6, "Soap",INNER_TX), new Product(7, "Error",FAILED_TX)));
         } catch (IllegalArgumentException illegalArgumentException) {
         }
         assertEquals(productService.listAll().size(), 2);

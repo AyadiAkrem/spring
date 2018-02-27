@@ -27,18 +27,36 @@ public interface ProductService {
 
     }
 
-    public default void add(Product product) {
+    default void addWithoutTransaction(Product product) {
+          getProductDao().persist(product);
+    }
+
+    default void add(Product product) {
         getProductDao().persist(product);
     }
 
-    public default void addAll(Collection<Product> products) {
-        for (Product product : products) {
-            if (product.getName().contains("Error")) {
-                throw new IllegalArgumentException();
-            } else {
-                add(product);
+    default void addAll(Collection<Product> products) {
+        for (final Product product : products) {
+            switch (product.getTransactionType()) {
+                case INNER_TX:
+                    add(product);
+                    break;
+                case CURRENT_TX:
+                    getProductDao().persist(product);
+                    break;
+                case FAILED_TX:
+                    throw new IllegalArgumentException();
+                case OUT_OF_TX:
+                    addWithoutTransaction(product);
+                    break;
+
             }
         }
+    }
+
+    @Transactional
+    public default void removeAll() {
+        getProductDao().removeAll();
     }
 
 }
